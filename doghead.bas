@@ -1,257 +1,421 @@
-DECLARE SUB levelme (str!, wis!, lck!, agi!, hpct!, dpct!, wname$, aname$, level!, name$, class$, expe!, needexpe!, hp!, maxhp!, mp!, maxmp!, gold!, weaponstr!, armorstr!)
-DECLARE SUB pyramid (e1w!, e1h!, me1h!, str!, wis!, lck!, agi!, hpct!, dpct!, wname$, aname$, level!, name$, class$, expe!, needexpe!, hp!, maxhp!, mp!, maxmp!, gold!, weaponstr!, armorstr!)
-DECLARE SUB fightmenu (ew1!, eh1!, me1h!, str!, wis!, lck!, agi!, hpct!, dpct!, wname$, aname$, level!, name$, class$, expe!, needexpe!, hp!, maxhp!, mp!, maxmp!, gold!, weaponstr!, armorstr!)
-DECLARE SUB temple (str!, wis!, lck!, agi!, hpct!, dpct!, wname$, aname$, level!, name$, class$, expe!, needexpe!, hp!, maxhp!, mp!, maxmp!, gold!, weaponstr!, armorstr!)
-DECLARE SUB healer (str!, wis!, lck!, agi!, hpct!, dpct!, wname$, aname$, level!, name$, class$, expe!, needexpe!, hp!, maxhp!, mp!, maxmp!, gold!, weaponstr!, armorstr!)
-DECLARE SUB armorshop (str!, wis!, lck!, agi!, hpct!, dpct!, wname$, aname$, level!, name$, class$, expe!, needexpe!, hp!, maxhp!, mp!, maxmp!, gold!, weaponstr!, armorstr!)
-DECLARE SUB inv (str!, wis!, lck!, agi!, hpct!, dpct!, wname$, aname$, level!, name$, class$, expe!, needexpe!, hp!, maxhp!, mp!, maxmp!, gold!, weaponstr!, armorstr!)
-DECLARE SUB stat (str!, wis!, lck!, agi!, hpct!, dpct!, wname$, aname$, level!, name$, class$, expe!, needexpe!, hp!, maxhp!, mp!, maxmp!, gold!, weaponstr!, armorstr!)
-DECLARE SUB weaponshop (str!, wis!, lck!, agi!, hpct!, dpct!, wname$, aname$, level!, name$, class$, expe!, needexpe!, hp!, maxhp!, mp!, maxmp!, gold!, weaponstr!, armorstr!)
-DECLARE SUB save (str!, wis!, lck!, agi!, hpct!, dpct!, wname$, aname$, level!, name$, class$, expe!, needexpe!, hp!, maxhp!, mp!, maxmp!, gold!, weaponstr!, armorstr!)
-REM -=+=-the first lines will be declarations of subs-=+=-
-CLS
-REM -=+=-=+=--=+=-=+=--=+=-=+=--=+=-=+=--=+=-=+=--=+=-
-REM welp. im starting over for my third time. fun eh?
-REM -=+=-=+=--=+=-=+=--=+=-=+=--=+=-=+=--=+=-=+=--=+=-
+DECLARE SUB pressAnyKey (m$)
+DECLARE FUNCTION lpad$ (s$, n%, p$)
+DECLARE FUNCTION insertInventory! (item AS ANY)
+DECLARE FUNCTION rpad$ (s$, n%, p$)
+DECLARE SUB weaponShop ()
+DECLARE SUB weaponBuy ()
+DECLARE SUB weaponSell ()
+DECLARE FUNCTION prompt$ ()
+DECLARE SUB loadData ()
+DECLARE SUB loadGame ()
+DECLARE SUB infoPanel ()
+DECLARE SUB mainMenu ()
+DECLARE SUB saveGame ()
+DECLARE FUNCTION bar$ (value%, minValue%, maxValue%, length%)
+DECLARE FUNCTION hasSavedGame! ()
+DECLARE FUNCTION weaponDamage$ (i%)
 
-REM -=+=- all let procedures goes here -=+=-
-LET me1h = 20
-LET e1h = 20
-LET e1w = 5
-LET level = 1
-LET str = 10
-LET wis = 10
-LET lck = 10
-LET agi = 10
-LET hpct = 50
-LET dpct = 50
-LET wname$ = "none"
-LET aname$ = "none"
-LET expe = 0
-LET needexpe = 10
-LET weaponstr = 10
-LET hp = 25
-LET maxhp = 25
-LET mp = 5
-LET maxmp = 5
-LET gold = 10000
-LET class = 1
-LET name$ = "Sparky"
-LET armorstr = 0
-REM -=+=- all let procedures ends here -=+=-
+TYPE ItemType
+    displayName AS STRING * 32
+    ItemType AS INTEGER
+    basedmg  AS INTEGER
+    dmg      AS INTEGER
+    rolls    AS INTEGER
+    speed    AS DOUBLE
+    hands    AS INTEGER
+    armor    AS INTEGER
+    value    AS INTEGER
+    shop     AS INTEGER
+END TYPE
 
+TYPE PlayerType
+    displayName AS STRING * 32
+    hp     AS INTEGER
+    maxhp  AS INTEGER
+    str    AS INTEGER
+    lhand  AS INTEGER
+    rhand  AS INTEGER
+    armor  AS INTEGER
+    shield AS INTEGER
+    xp     AS INTEGER
+    level  AS INTEGER
+    gold   AS INTEGER
+END TYPE
 
-REM -=+=-Information collection goes here (name,class,etc)-=+=-
+TYPE EnemyType
+    displayName AS STRING * 32
+    maxhp AS INTEGER
+    rolls AS INTEGER
+    dmg   AS INTEGER
+    armor AS INTEGER
+END TYPE
 
-REM -=+=-Information collection ends here (name,class,etc)-=+=-
+DIM items(255)   AS ItemType
+DIM enemies(255) AS EnemyType
+DIM inventory(7) AS ItemType
 
+DIM player       AS PlayerType
 
-INPUT "name?", name$
-    OPEN name$ + ".dog" FOR BINARY AS #1
-     IF LOF(1) = 0 THEN GOTO 9 ELSE GOTO 8
-    CLOSE #1
-  CLOSE #1
-8    OPEN name$ + ".dog" FOR INPUT AS #2
-        DO WHILE NOT EOF(2)
-          INPUT #2, str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr
-        LOOP
-    CLOSE #2: REM dis is the procedure to read. should be at beginnign.
-  CLOSE #2
-GOTO 10
+PRINT "Loading Data..."
 
+loadData
 
-9 CLS
-    REM INPUT "What do you want your new character's name to be? ", name$
-      OPEN name$ + ".dog" FOR INPUT AS #3
-       INPUT "press 1 right here (for your class (only 1 in existance)) ", class
-         DO WHILE NOT EOF(3)
-          INPUT #3, str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr
-         LOOP
-      CLOSE #3: REM dis is the procedure to read. should be at beginnign
+PRINT "Loaded."
+
+IF hasSavedGame = 0 THEN
+    INPUT "What is your name? ", player.displayName
+    player.hp = 25
+    player.maxhp = 25
+    player.xp = 0
+    player.level = 1
+    player.gold = 10
+    player.lhand = 0
+    player.rhand = -1
+    player.shield = -1
+    player.armor = -1
+
+    inventory(0) = items(0)
+ELSE
+    loadGame
+END IF
+
+pressAnyKey ("Welcome, " + RTRIM$(player.displayName) + ".")
+
+DO
+    mainMenu
+LOOP
+
+FUNCTION bar$ (value%, minValue%, maxValue%, length%)
+    current% = INT((value% + minValue%) / maxValue% * length%)
+
+    tmp$ = "["
+    FOR i = 0 TO length%
+        IF i < current% THEN
+            tmp$ = tmp$ + "="
+        ELSEIF i = current% THEN
+            tmp$ = tmp$ + ">"
+        ELSE
+            tmp$ = tmp$ + " "
+        END IF
+    NEXT i
+    tmp$ = tmp$ + "]"
+
+    bar$ = tmp$
+END FUNCTION
+
+FUNCTION hasSavedGame
+    OPEN "D:\doghe~22\save.dog" FOR BINARY AS 1
+    IF LOF(1) = 0 THEN
+        CLOSE
+        hasSavedGame = 0
+        EXIT FUNCTION
+    ELSE
+        CLOSE
+        hasSavedGame = 1
+        EXIT FUNCTION
+    END IF
+END FUNCTION
+
+SUB infoPanel
+    SHARED player AS PlayerType
+
+    DIM tmp AS STRING
+    DIM levelxp AS INTEGER
+    
+    levelxp = 100
+
+    tmp = lpad$(" XP " + bar$(player.xp, 0, levelxp, 20) + " " + STR$(player.xp) + " / " + STR$(levelxp), 40, " ") + rpad$(RTRIM$(player.displayName), 40, " ")
+    PRINT tmp
+
+    tmp = lpad$(" HP " + bar$(player.hp, 0, player.maxhp, 20) + " " + STR$(player.hp) + " / " + STR$(player.maxhp), 40, " ") + rpad(" Level " + LTRIM$(STR$(player.level)) + " Gold " + LTRIM$(STR$(player.gold)), 40, " ")
+    PRINT tmp
+
+    PRINT
+    PRINT STRING$(80, "=")
+    PRINT
+END SUB
+
+FUNCTION insertInventory (item AS ItemType)
+    SHARED inventory() AS ItemType
+
+    FOR i = 0 TO UBOUND(inventory)
+        IF inventory(i).displayName <> "" THEN
+            inventory(i) = item
+
+            insertInventory = 1
+            EXIT FUNCTION
+        END IF
+    NEXT i
+
+    insertInventory = 0
+    EXIT FUNCTION
+END FUNCTION
+
+SUB loadData
+    SHARED items() AS ItemType
+    SHARED enemies() AS EnemyType
+
+    LET i = 0
+
+    OPEN "D:\doghe~22\items.dog" FOR INPUT AS 1
+    DO WHILE NOT EOF(1)
+       INPUT #1, items(i).displayName, items(i).ItemType, items(i).basedmg, items(i).dmg, items(i).rolls, items(i).speed, items(i).hands, items(i).armor, items(i).value, items(i).shop
+       i = i + 1
+    LOOP
+    CLOSE
+    
+    OPEN "D:\doghe~22\enemies.dog" FOR INPUT AS 1
+    DO WHILE NOT EOF(1)
+       INPUT #1, enemies(i).displayName, enemies(i).maxhp, enemies(i).rolls, enemies(i).dmg, enemies(i).armor
+       i = i + 1
+    LOOP
+    CLOSE
+END SUB
+
+SUB loadGame
+    SHARED player      AS PlayerType
+    SHARED inventory() AS ItemType
+
+    LET i = 0
+    
+    OPEN "D:\doghe~22\save.dog" FOR INPUT AS 1
+
+    INPUT #1, player.displayName, player.hp, player.maxhp, player.lhand, player.rhand, player.armor, player.shield, player.xp, player.level, player.gold
+
+    DO WHILE NOT EOF(1)
+       INPUT #1, inventory(i).displayName, inventory(i).ItemType, inventory(i).basedmg, inventory(i).dmg, inventory(i).rolls, inventory(i).speed, inventory(i).hands, inventory(i).armor, inventory(i).value, inventory(i).shop
+       i = i + 1
+    LOOP
+
+    CLOSE
+END SUB
+
+FUNCTION lpad$ (s$, n%, p$)
+    l% = LEN(s$)
+
+    IF l% > n% THEN
+        l% = n%
+    END IF
+
+    lpad$ = s$ + STRING$(n% - l%, p$)
+END FUNCTION
+
+SUB mainMenu
+    SHARED player AS PlayerType
+
     CLS
-  PRINT "Welcome to the realms, "; name$
-PRINT "if you need any help, refer to the readme file."
-REM -=+=- leveling procedures goes here -=+=-
+    infoPanel
 
-REM -=+=- leveling procedures ends here -=+=-
+    PRINT "           (W)eapon shop     "
+    PRINT "           (A)rmor shop      "
+    PRINT "           (B)lacksmith      "
+    PRINT "          t(E)mple           "
+    PRINT "           (I)nventory       "
+    PRINT "          s(T)ats            "
+    PRINT "       sewe(R)               "
+    PRINT "           (N)orth gate      "
+    PRINT "           (S)outhwest gate  "
+    PRINT "  save and (Q)uit            "
 
-REM -=+=- main menu/town square goes here -=+=-
+    PRINT
+    PRINT STRING$(80, "=")
+    PRINT
 
-10
-PRINT "+----------------+"
-PRINT "|  (W)eapon shop |"
-PRINT "|  (I)nventory   |"
-PRINT "| s(T)ats        |"
-PRINT "|  (H)ealer      |"
-PRINT "|  (F)ight stuff |"
-PRINT "| t(E)mple       |"
-PRINT "|  (S)ave game   |"
-PRINT "|  (A)rmor shop  |"
-PRINT "+----------------+"
-PRINT hp; "/"; maxhp; " "; mp; "/"; maxmp; : INPUT "]", savepr$
-IF UCASE$(savepr$) = "S" THEN CALL save(str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr): GOTO 10 ELSE
-IF UCASE$(savepr$) = "F" THEN CALL fightmenu(ew1, eh1, me1h, str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr): GOTO 10 ELSE
-IF UCASE$(savepr$) = "E" THEN CALL temple(str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr): GOTO 10 ELSE
-IF UCASE$(savepr$) = "H" THEN CALL healer(str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr): GOTO 10 ELSE
-IF UCASE$(savepr$) = "I" THEN CALL inv(str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr): GOTO 10 ELSE
-IF UCASE$(savepr$) = "T" THEN CALL stat(str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr): GOTO 10 ELSE
-IF UCASE$(savepr$) = "A" THEN CALL armorshop(str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr): GOTO 10 ELSE
-IF UCASE$(savepr$) = "W" THEN CALL weaponshop(str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr): GOTO 10 ELSE PRINT "Try typing better please.": GOTO 10
-
-REM -=+=- main menu/town square ends here -=+=-
-
-SUB armorshop (str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr)
-PRINT "You are in the weapon shop. As you approach the shopkeeper he stares; at; you AND asks; you; what; weapon; you; want.; "; ""
-CLS
-PRINT ""
-PRINT "1 Cloth                 |50"
-PRINT "2 Leather               |100"
-PRINT "3 Chain                 |150"
-PRINT "4 Scale                 |250"
-PRINT "5 Brigandine            |450"
-PRINT "6 Half-plate            |550"
-PRINT "7 Full-plate            |700"
-PRINT "8 Black Plate           |750"
-PRINT "9 Holy Plate            |900"
-PRINT "10 Silver plate         |1500"
-INPUT "Whadda ya want? ", what$
-IF what$ = "1" AND gold > 50 THEN gold = gold - 50: armorstr = 15: aname$ = "Cloth": GOTO 31 ELSE
-IF what$ = "2" AND gold > 100 THEN gold = gold - 100: armorstr = 20: aname$ = "Leather": GOTO 31 ELSE
-IF what$ = "3" AND gold > 150 THEN gold = gold - 150: armorstr = 25: aname$ = "Chain": GOTO 31 ELSE
-IF what$ = "4" AND gold > 250 THEN gold = gold - 250: armorstr = 30: aname$ = "Scale": GOTO 31 ELSE
-IF what$ = "5" AND gold > 450 THEN gold = gold - 450: armorstr = 35: aname$ = "Brigandine": GOTO 31 ELSE
-IF what$ = "6" AND gold > 550 THEN gold = gold - 550: armorstr = 40: aname$ = "Half-Plate": GOTO 31 ELSE
-IF what$ = "7" AND gold > 700 THEN gold = gold - 700: armorstr = 45: aname$ = "Full-Plate": GOTO 31 ELSE
-IF what$ = "8" AND gold > 750 THEN gold = gold - 750: armorstr = 50: aname$ = "Black Plate": GOTO 31 ELSE
-IF what$ = "9" AND gold > 900 THEN gold = gold - 900: armorstr = 55: aname$ = "Holy Plate": GOTO 31 ELSE
-IF what$ = "10" AND gold > 1500 THEN gold = gold - 1500: armorstr = 100: aname$ = "Silver Plate": GOTO 31 ELSE GOTO 32
-32 PRINT "Im sorry, you dont seem to have enough gold."
-GOTO 30
-31 PRINT "Enoy your new weapon!"
-GOTO 30
-
-30 END SUB
-
-SUB fightmenu (e1w, e1h, me1h, str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr)
-PRINT "+-----------------------+"
-PRINT "|  (P)yramids           |"
-PRINT "|  (A)nienct Ruins      |"
-PRINT "|  (S)wamp              |"
-PRINT "|  (T)errace mountain   |"
-PRINT "|  (L)eave              |"
-PRINT "+-----------------------+"
-PRINT hp; "/"; maxhp; " "; mp; "/"; maxmp; : INPUT "]", fmenu$
-IF UCASE$(fmenu$) = "P" THEN CALL pyramid(e1w, e1h, me1h, str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr)
-CALL levelme(str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr)
+    SELECT CASE prompt$
+        CASE "Q"
+            saveGame
+            END
+        CASE "W"
+            weaponShop
+        CASE "I"
+            manageInventory
+    END SELECT
 END SUB
 
-SUB healer (str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr)
-PRINT "Hello, You are now at my little healing shack. 50 gold to heal your wounds."
-PRINT "Press H to heal and L to leave"
-PRINT hp; "/"; maxhp; " "; mp; "/"; maxmp; : INPUT "]", heal$
-IF UCASE$(heal$) = "H" AND gold > 50 THEN LET hp = maxhp ELSE IF UCASE$(heal$) = "H" AND gold < 50 THEN PRINT "Im sorry, you dont have enough gold": GOTO 40 ELSE IF UCASE$(heal$) = "L" THEN GOTO 40
-40 END SUB
+SUB pressAnyKey (m$)
+    PRINT m$
 
-SUB inv (str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr)
-PRINT "Torso Armor - "; aname$
-PRINT "Weapon      - "; wname$
-SLEEP 2
+    DO
+    LOOP UNTIL INKEY$ <> ""
 END SUB
 
-SUB levelme (str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr)
-IF expe >= needexpe THEN level = level + 1: LET needexpe = needexpe * 2.5: LET maxhp = maxhp + 10: LET hp = maxhp: LET maxmp = maxmp + 5: LET mp = maxmp: PRINT "Ya Leveled!" ELSE
+FUNCTION prompt$
+    INPUT " Command: ", choice$
+    prompt$ = UCASE$(choice$)
+END FUNCTION
+
+FUNCTION rpad$ (s$, n%, p$)
+    l% = LEN(s$)
+
+    IF l% > n% THEN
+        l% = n%
+    END IF
+
+    rpad$ = STRING$(n% - l%, p$) + s$
+END FUNCTION
+
+SUB saveGame
+    SHARED player      AS PlayerType
+    SHARED inventory() AS ItemType
+    
+    OPEN "D:\doghe~22\save.dog" FOR OUTPUT AS 1
+
+    WRITE #1, player.displayName, player.hp, player.maxhp, player.lhand, player.rhand, player.armor, player.shield, player.xp, player.level, player.gold
+
+    FOR i = 0 TO UBOUND(inventory)
+        WRITE #1, inventory(i).displayName, inventory(i).ItemType, inventory(i).basedmg, inventory(i).dmg, inventory(i).rolls, inventory(i).speed, inventory(i).hands, inventory(i).armor, inventory(i).value, inventory(i).shop
+    NEXT i
+
+    CLOSE
 END SUB
 
-SUB pyramid (e1w, e1h, me1h, str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr)
-PRINT "You are now in the pyramids, as you approach a mummy attacks you."
-99 PRINT "((A)ttack (R)un))"
-PRINT hp; "/"; maxhp; " "; mp; "/"; maxmp; : INPUT "]", at$
-IF UCASE$(at$) = "A" THEN GOTO 100 ELSE IF UCASE$(at$) = "R" THEN GOTO 101 ELSE PRINT "try again": GOTO 99
-100
-LET hit1 = INT(RND * hpct)
-IF hit1 > hpct THEN PRINT "You swing and miss!": GOTO 110 ELSE
-LET hit = INT(RND * weaponstr)
-LET e1h = e1h - hit
-PRINT "You hit the mummy for "; hit; "damage!"
-IF e1h <= 0 THEN PRINT "You have killed the mummy!": LET expe = expe + 10: LET e1h = me1h: GOTO 101 ELSE GOTO 110
-110
-LET ehit = INT(RND * ew1)
-LET ehit2 = ehit - armor
-IF ehit <= 0 THEN ehit = 0
-PRINT "The monster hit you for"; ehit; "damage!"
-LET hp = hp - ehit
-IF hp <= 0 THEN PRINT "You died": SLEEP: END ELSE GOTO 99
-101 END SUB
+SUB weaponBuy
+    SHARED items()     AS ItemType
+    SHARED player      AS PlayerType
+    SHARED inventory() AS ItemType
 
-SUB save (str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr)
+    CLS
+    infoPanel
 
-    CLOSE #1, #2, #3, #4
-      OPEN name$ + ".dog" FOR OUTPUT AS #1
-        WRITE #1, str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr
-        CLOSE #1
+    DIM choices(UBOUND(items) + 2) AS INTEGER
+    DIM i AS INTEGER
+    DIM maxChoice AS INTEGER
 
+    j = 1
+
+    PRINT STRING$(5, " ") + lpad$("Name", 32, " ") + lpad$("Damage", 20, " ") + "Hands" + rpad("Price", 18, " ")
+    PRINT
+
+    FOR i = 0 TO UBOUND(items)
+        IF (items(i).shop = 1 AND items(i).ItemType = 0) THEN
+            PRINT " (" + LTRIM$(STR$(j)) + ") " + items(i).displayName + lpad$(weaponDamage$(i), 20, " ") + LTRIM$(STR$(items(i).hands)) + "h" + rpad$(LTRIM$(STR$(items(i).value)), 21, " ")
+            
+            choices(j) = i
+            maxChoice = j
+
+            j = j + 1
+        END IF
+    NEXT i
+    
+    PRINT
+    PRINT " (B)ack"
+    
+    PRINT
+    PRINT STRING$(80, "=")
+    PRINT
+
+    choice$ = prompt$
+    ci = VAL(choice$)
+
+    IF (ci >= 1 AND ci <= maxChoice) THEN
+        IF player.gold >= items(choices(ci)).value THEN
+            inserted = insertInventory(items(choices(ci)))
+
+            IF inserted <> 1 THEN
+                pressAnyKey("Your inventory is full.")
+                
+                EXIT SUB
+            END IF
+
+            player.gold = player.gold - items(choices(ci)).value
+        ELSE
+            pressAnyKey("You do not have enough gold.")
+
+            EXIT SUB
+        END IF
+    ELSEIF UCASE$(choice$) = "B" THEN
+    ELSE
+        pressAnyKey("Invalid command.")
+    END IF
 END SUB
 
-SUB stat (str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr)
-PRINT "Here are your stats, "; name$
-PRINT ""
-PRINT "Strengh        = "; str;
-PRINT "Wisdom         = "; wis
-PRINT "Luck           = "; lck;
-PRINT "Agility        = "; agi
-PRINT "Hit %          = "; hpct;
-PRINT "Dodge %        = "; dpct
-PRINT "HP             = "; hp;
-PRINT "MAX HP         = "; maxhp
-PRINT "MP             = "; maxmp;
-PRINT "Exp             = "; expe
-PRINT "Level          = "; level;
-PRINT "Gold            = "; gold
-PRINT "Armor Strengh  = "; armorstr;
-PRINT "Weapon Strengh  = "; dpct
-PRINT "       NeedExp            = "; needexpe
-SLEEP 2
+FUNCTION weaponDamage$ (i%)
+    SHARED items() AS ItemType
+
+    tmp$ = LTRIM$(STR$(items(i%).rolls)) + "d" + LTRIM$(STR$(items(i%).dmg))
+    
+    IF items(i%).basedmg > 0 THEN
+        tmp$ = tmp$ + "+" + LTRIM$(STR$(items(i%).basedmg))
+    END IF
+    
+    tmp$ = tmp$ + " (" + LTRIM$(STR$(items(i%).speed)) + " speed)"
+
+    weaponDamage$ = tmp$
+END FUNCTION
+
+SUB weaponSell
 END SUB
 
-SUB temple (str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr)
-55 PRINT "You are now in the temple"
-PRINT "Press B to buy spells, R to recharge mana, and L to leave"
-PRINT hp; "/"; maxhp; " "; mp; "/"; maxmp; : INPUT "]", tch$
-IF UCASE$(tch$) = "B" THEN GOTO 60 ELSE IF UCASE$(tch$) = "R" THEN GOTO 70 ELSE IF UCASE$(tch$) = "L" THEN GOTO 90 ELSE PRINT "type better": GOTO 55
-60 PRINT "Im sorry, were sold out today": GOTO 55
-70 PRINT "I am recharging your mana now!"
-LET mp = maxmp
-GOTO 55
-90 END SUB
+SUB weaponShop
+    SHARED player AS PlayerType
 
-SUB weaponshop (str, wis, lck, agi, hpct, dpct, wname$, aname$, level, name$, class$, expe, needexpe, hp, maxhp, mp, maxmp, gold, weaponstr, armorstr)
+    CLS
+    infoPanel
 
-PRINT "You are in the weapon shop. As you approach the shopkeeper he stares; at; you AND asks; you; what; weapon; you; want.; "; ""
-CLS
-PRINT ""
-PRINT "1 Dagger                |50"
-PRINT "2 Shortsword            |100"
-PRINT "3 Longsword             |150"
-PRINT "4 Greatsword            |250"
-PRINT "5 Ebony Greatsword      |450"
-PRINT "6 Soulslayer            |550"
-PRINT "7 Runesword             |700"
-PRINT "8 Jeweled Longsword     |750"
-PRINT "9 ShieldBreaker         |900"
-PRINT "10 Excalibur            |1500"
-INPUT "Whadda ya want? ", what$
-IF what$ = "1" AND gold > 50 THEN gold = gold - 50: weaponstr = 15: wname$ = "Dagger": GOTO 21 ELSE
-IF what$ = "2" AND gold > 100 THEN gold = gold - 100: weaponstr = 20: wname$ = "ShortSword": GOTO 21 ELSE
-IF what$ = "3" AND gold > 150 THEN gold = gold - 150: weaponstr = 25: wname$ = "LongSword": GOTO 21 ELSE
-IF what$ = "4" AND gold > 250 THEN gold = gold - 250: weaponstr = 30: wname$ = "GreatSword": GOTO 21 ELSE
-IF what$ = "5" AND gold > 450 THEN gold = gold - 450: weaponstr = 35: wname$ = "Ebony GreatSword": GOTO 21 ELSE
-IF what$ = "6" AND gold > 550 THEN gold = gold - 550: weaponstr = 40: wname$ = "Soulslayer": GOTO 21 ELSE
-IF what$ = "7" AND gold > 700 THEN gold = gold - 700: weaponstr = 45: wname$ = "RuneSword": GOTO 21 ELSE
-IF what$ = "8" AND gold > 750 THEN gold = gold - 750: weaponstr = 50: wname$ = "Jeweled LongSword": GOTO 21 ELSE
-IF what$ = "9" AND gold > 900 THEN gold = gold - 900: weaponstr = 55: wname$ = "ShieldBreaker": GOTO 21 ELSE
-IF what$ = "10" AND gold > 1500 THEN gold = gold - 1500: weaponstr = 100: wname$ = "Excalibur": GOTO 20 ELSE GOTO 22
-22 PRINT "Im sorry, you dont seem to have enough gold."
-GOTO 20
-21 PRINT "Enoy your new weapon!"
-GOTO 20
-20 END SUB
+    PRINT " (B) Buy  "
+    PRINT " (S) Sell "
+
+    PRINT
+    PRINT STRING$(80, "=")
+    PRINT
+
+    SELECT CASE prompt$
+        CASE "B"
+            weaponBuy
+        CASE "S"
+            weaponSell
+    END SELECT
+END SUB
+
+SUB manageInventory
+    SHARED player      AS PlayerType
+    SHARED inventory() AS ItemType
+
+    CLS
+    infoPanel
+        
+    tmp$ = lpad$(" (L)eft hand", 13, " ")
+    if (player.lhand <> -1) THEN
+        tmp$ = tmp$ + rpad$(RTRIM$(inventory(player.lhand).displayName), 32, " ")
+    ELSE
+        tmp$ = tmp$ + rpad$("Nothing", 32, " ")
+    END IF
+    PRINT tmp$
+    
+    tmp$ = lpad$(" (R)ight hand", 13, " ")
+    if (player.rhand <> -1) THEN
+        tmp$ = tmp$ + rpad$(RTRIM$(inventory(player.rhand).displayName), 32, " ")
+    ELSE
+        tmp$ = tmp$ + rpad$("Nothing", 32, " ")
+    END IF
+    PRINT tmp$
+    
+    tmp$ = lpad$(" (A)rmor", 13, " " )
+    if (player.armor <> -1) THEN
+        tmp$ = tmp$ + rpad$(RTRIM$(inventory(player.armor).displayName), 32, " ")
+    ELSE
+        tmp$ = tmp$ + rpad$("Nothing", 32, " ")
+    END IF
+    PRINT tmp$
+    
+    j = 1
+    FOR i = 0 TO UBOUND(inventory)
+        IF (i <> player.lhand AND i <> player.rhand AND i <> player.armor) THEN
+            tmp$ = lpad(" (" + LTRIM$(STR$(j)) + ")", 13, " ")
+            IF (inventory(i).displayName <> STRING$(32," ") AND inventory(i).displayName <> STRING$(32, CHR$(0))) THEN
+                tmp$ = tmp$ + rpad$(RTRIM$(inventory(i).displayName), 32, " ")
+            ELSE
+                tmp$ = tmp$ + rpad$("Nothing", 32, " ")
+            END IF
+            PRINT tmp$
+            
+            j = j + 1
+        END IF
+    NEXT i
+
+    PRINT
+    PRINT STRING$(80, "=")
+    PRINT
+
+    choice$ = prompt$
+END SUB
