@@ -104,7 +104,7 @@ FUNCTION bar$ (value%, minValue%, maxValue%, length%)
 END FUNCTION
 
 FUNCTION hasSavedGame
-    OPEN "D:\doghe~22\save.dog" FOR BINARY AS 1
+    OPEN "save.dog" FOR BINARY AS 1
     IF LOF(1) = 0 THEN
         CLOSE
         hasSavedGame = 0
@@ -150,14 +150,14 @@ END FUNCTION
 SUB loadData
     LET i = 0
 
-    OPEN "D:\doghe~22\items.dog" FOR INPUT AS 1
+    OPEN "items.dog" FOR INPUT AS 1
     DO WHILE NOT EOF(1)
        INPUT #1, items(i).displayName, items(i).ItemType, items(i).basedmg, items(i).dmg, items(i).rolls, items(i).speed, items(i).hands, items(i).armor, items(i).value, items(i).shop
        i = i + 1
     LOOP
     CLOSE
     
-    OPEN "D:\doghe~22\enemies.dog" FOR INPUT AS 1
+    OPEN "enemies.dog" FOR INPUT AS 1
     DO WHILE NOT EOF(1)
        INPUT #1, enemies(i).displayName, enemies(i).maxhp, enemies(i).rolls, enemies(i).dmg, enemies(i).armor
        i = i + 1
@@ -168,7 +168,7 @@ END SUB
 SUB loadGame
     LET i = 0
     
-    OPEN "D:\doghe~22\save.dog" FOR INPUT AS 1
+    OPEN "save.dog" FOR INPUT AS 1
 
     INPUT #1, player.displayName, player.hp, player.maxhp, player.lhand, player.rhand, player.armor, player.shield, player.xp, player.level, player.gold
 
@@ -243,7 +243,7 @@ FUNCTION rpad$ (s$, n%, p$)
 END FUNCTION
 
 SUB saveGame
-    OPEN "D:\doghe~22\save.dog" FOR OUTPUT AS 1
+    OPEN "save.dog" FOR OUTPUT AS 1
 
     WRITE #1, player.displayName, player.hp, player.maxhp, player.lhand, player.rhand, player.armor, player.shield, player.xp, player.level, player.gold
 
