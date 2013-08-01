@@ -212,7 +212,8 @@ SUB mainMenu
     SELECT CASE prompt$
         CASE "Q"
             saveGame
-            END
+
+            SYSTEM
         CASE "W"
             weaponShop
         CASE "I"
