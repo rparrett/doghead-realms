@@ -50,11 +50,11 @@ TYPE EnemyType
     armor AS INTEGER
 END TYPE
 
-DIM items(255)   AS ItemType
-DIM enemies(255) AS EnemyType
-DIM inventory(7) AS ItemType
+DIM SHARED items(255)   AS ItemType
+DIM SHARED enemies(255) AS EnemyType
+DIM SHARED inventory(7) AS ItemType
 
-DIM player       AS PlayerType
+DIM SHARED player       AS PlayerType
 
 PRINT "Loading Data..."
 
@@ -117,8 +117,6 @@ FUNCTION hasSavedGame
 END FUNCTION
 
 SUB infoPanel
-    SHARED player AS PlayerType
-
     DIM tmp AS STRING
     DIM levelxp AS INTEGER
     
@@ -136,8 +134,6 @@ SUB infoPanel
 END SUB
 
 FUNCTION insertInventory (item AS ItemType)
-    SHARED inventory() AS ItemType
-
     FOR i = 0 TO UBOUND(inventory)
         IF inventory(i).displayName <> "" THEN
             inventory(i) = item
@@ -152,9 +148,6 @@ FUNCTION insertInventory (item AS ItemType)
 END FUNCTION
 
 SUB loadData
-    SHARED items() AS ItemType
-    SHARED enemies() AS EnemyType
-
     LET i = 0
 
     OPEN "D:\doghe~22\items.dog" FOR INPUT AS 1
@@ -173,9 +166,6 @@ SUB loadData
 END SUB
 
 SUB loadGame
-    SHARED player      AS PlayerType
-    SHARED inventory() AS ItemType
-
     LET i = 0
     
     OPEN "D:\doghe~22\save.dog" FOR INPUT AS 1
@@ -201,8 +191,6 @@ FUNCTION lpad$ (s$, n%, p$)
 END FUNCTION
 
 SUB mainMenu
-    SHARED player AS PlayerType
-
     CLS
     infoPanel
 
@@ -255,9 +243,6 @@ FUNCTION rpad$ (s$, n%, p$)
 END FUNCTION
 
 SUB saveGame
-    SHARED player      AS PlayerType
-    SHARED inventory() AS ItemType
-    
     OPEN "D:\doghe~22\save.dog" FOR OUTPUT AS 1
 
     WRITE #1, player.displayName, player.hp, player.maxhp, player.lhand, player.rhand, player.armor, player.shield, player.xp, player.level, player.gold
@@ -270,10 +255,6 @@ SUB saveGame
 END SUB
 
 SUB weaponBuy
-    SHARED items()     AS ItemType
-    SHARED player      AS PlayerType
-    SHARED inventory() AS ItemType
-
     CLS
     infoPanel
 
@@ -330,8 +311,6 @@ SUB weaponBuy
 END SUB
 
 FUNCTION weaponDamage$ (i%)
-    SHARED items() AS ItemType
-
     tmp$ = LTRIM$(STR$(items(i%).rolls)) + "d" + LTRIM$(STR$(items(i%).dmg))
     
     IF items(i%).basedmg > 0 THEN
@@ -347,8 +326,6 @@ SUB weaponSell
 END SUB
 
 SUB weaponShop
-    SHARED player AS PlayerType
-
     CLS
     infoPanel
 
@@ -368,9 +345,6 @@ SUB weaponShop
 END SUB
 
 SUB manageInventory
-    SHARED player      AS PlayerType
-    SHARED inventory() AS ItemType
-
     CLS
     infoPanel
         
