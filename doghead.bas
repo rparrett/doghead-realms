@@ -405,8 +405,23 @@ SUB manageInventoryItem(i%)
     CLS
     infoPanel
 
+    SELECT CASE inventory(i%).itemType
+        CASE 0
+            manageInventoryWeapon(i%)
+        CASE 1
+            manageInventoryArmor(i%)
+        CASE 2
+            manageInventoryOther(i%)
+    END SELECT
+END SUB
+
+SUB manageInventoryWeapon(i%)
     PRINT " Equip (L)eft Hand"
-    PRINT " Equip (R)ight Hand"
+
+    IF inventory(i%).hands = 1 THEN
+        PRINT " Equip (R)ight Hand"
+    END IF
+
     PRINT "       (D)rop"
     PRINT
     PRINT "       (B)ack"
@@ -416,6 +431,10 @@ SUB manageInventoryItem(i%)
 
     SELECT CASE UCASE$(choice$)
         CASE "L"
+            IF (inventory(player.lhand).hands = 2 OR inventory(i%).hands = 2) THEN
+                player.rhand = -1
+            END IF
+
             player.lhand = i%
         CASE "R"
             player.rhand = i%
@@ -423,4 +442,10 @@ SUB manageInventoryItem(i%)
             DIM tmp AS ItemType
             inventory(i%) = tmp
     END SELECT
+END SUB
+
+SUB manageInventoryArmor(i%)
+END SUB
+
+SUB manageInventoryOther(i%)
 END SUB
