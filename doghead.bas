@@ -135,7 +135,7 @@ END SUB
 
 FUNCTION insertInventory (item AS ItemType)
     FOR i = 0 TO UBOUND(inventory)
-        IF inventory(i).displayName <> "" THEN
+        IF (inventory(i).displayName = STRING$(32," ") OR inventory(i).displayName = STRING$(32, CHR$(0))) THEN
             inventory(i) = item
 
             insertInventory = 1
@@ -346,6 +346,8 @@ SUB weaponShop
 END SUB
 
 SUB manageInventory
+    DIM choices(UBOUND(inventory) + 2) AS INTEGER
+
     CLS
     infoPanel
         
@@ -384,6 +386,8 @@ SUB manageInventory
             END IF
             PRINT tmp$
             
+            choices(j) = i
+            
             j = j + 1
         END IF
     NEXT i
@@ -393,4 +397,30 @@ SUB manageInventory
     PRINT
 
     choice$ = prompt$
+
+    manageInventoryItem(choices(VAL(choice$)))
+END SUB
+
+SUB manageInventoryItem(i%)
+    CLS
+    infoPanel
+
+    PRINT " Equip (L)eft Hand"
+    PRINT " Equip (R)ight Hand"
+    PRINT "       (D)rop"
+    PRINT
+    PRINT "       (B)ack"
+    PRINT
+
+    choice$ = prompt$
+
+    SELECT CASE UCASE$(choice$)
+        CASE "L"
+            player.lhand = i%
+        CASE "R"
+            player.rhand = i%
+        CASE "D"
+            DIM tmp AS ItemType
+            inventory(i%) = tmp
+    END SELECT
 END SUB
