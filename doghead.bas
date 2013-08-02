@@ -265,12 +265,12 @@ SUB weaponBuy
 
     j = 1
 
-    PRINT STRING$(5, " ") + lpad$("Name", 32, " ") + lpad$("Damage", 20, " ") + "Hands" + rpad("Price", 18, " ")
+    PRINT STRING$(5, " ") + lpad$("Name", 32, " ") + lpad$("Damage", 20, " ") + "Hands" + rpad("Price", 17, " ")
     PRINT
 
     FOR i = 0 TO UBOUND(items)
         IF (items(i).shop = 1 AND items(i).ItemType = 0) THEN
-            PRINT " (" + LTRIM$(STR$(j)) + ") " + items(i).displayName + lpad$(weaponDamage$(i), 20, " ") + LTRIM$(STR$(items(i).hands)) + "h" + rpad$(LTRIM$(STR$(items(i).value)), 21, " ")
+            PRINT " (" + LTRIM$(STR$(j)) + ") " + items(i).displayName + lpad$(weaponDamage$(i), 20, " ") + LTRIM$(STR$(items(i).hands)) + "h" + rpad$(LTRIM$(STR$(items(i).value)), 20, " ")
             
             choices(j) = i
             maxChoice = j
@@ -347,64 +347,93 @@ END SUB
 
 SUB manageInventory
     DIM choices(UBOUND(inventory) + 2) AS INTEGER
+    
+    DO
+        CLS
+        infoPanel
 
+        tmp$ = lpad$(" (L)eft hand", 13, " ")
+        if (player.lhand <> -1) THEN
+            tmp$ = tmp$ + rpad$(RTRIM$(inventory(player.lhand).displayName), 32, " ")
+        ELSE
+            tmp$ = tmp$ + rpad$("Nothing", 32, " ")
+        END IF
+        PRINT tmp$
+        
+        tmp$ = lpad$(" (R)ight hand", 13, " ")
+        if (player.rhand <> -1) THEN
+            tmp$ = tmp$ + rpad$(RTRIM$(inventory(player.rhand).displayName), 32, " ")
+        ELSE
+            tmp$ = tmp$ + rpad$("Nothing", 32, " ")
+        END IF
+        PRINT tmp$
+        
+        tmp$ = lpad$(" (A)rmor", 13, " " )
+        if (player.armor <> -1) THEN
+            tmp$ = tmp$ + rpad$(RTRIM$(inventory(player.armor).displayName), 32, " ")
+        ELSE
+            tmp$ = tmp$ + rpad$("Nothing", 32, " ")
+        END IF
+        PRINT tmp$
+        
+        j = 1
+        FOR i = 0 TO UBOUND(inventory)
+            IF (i <> player.lhand AND i <> player.rhand AND i <> player.armor) THEN
+                tmp$ = lpad(" (" + LTRIM$(STR$(j)) + ")", 13, " ")
+                IF (inventory(i).displayName <> STRING$(32," ") AND inventory(i).displayName <> STRING$(32, CHR$(0))) THEN
+                    tmp$ = tmp$ + rpad$(RTRIM$(inventory(i).displayName), 32, " ")
+                ELSE
+                    tmp$ = tmp$ + rpad$("Nothing", 32, " ")
+                END IF
+                PRINT tmp$
+                
+                choices(j) = i
+                
+                j = j + 1
+            END IF
+        NEXT i
+
+        PRINT
+        PRINT STRING$(80, "=")
+        PRINT
+
+        choice$ = prompt$
+        choice% = VAL(choice$)
+
+        IF (choice% >= 1 AND choice% <= 9) THEN
+            manageInventoryItem(choices(VAL(choice$)))
+        ELSEIF UCASE$(choice$) = "B" THEN
+            EXIT SUB
+        ELSE
+            manageEquipmentSlot(UCASE$(choice$))
+        END IF
+    LOOP
+END SUB
+
+SUB manageEquipmentSlot(slot$)
     CLS
     infoPanel
-        
-    tmp$ = lpad$(" (L)eft hand", 13, " ")
-    if (player.lhand <> -1) THEN
-        tmp$ = tmp$ + rpad$(RTRIM$(inventory(player.lhand).displayName), 32, " ")
-    ELSE
-        tmp$ = tmp$ + rpad$("Nothing", 32, " ")
-    END IF
-    PRINT tmp$
-    
-    tmp$ = lpad$(" (R)ight hand", 13, " ")
-    if (player.rhand <> -1) THEN
-        tmp$ = tmp$ + rpad$(RTRIM$(inventory(player.rhand).displayName), 32, " ")
-    ELSE
-        tmp$ = tmp$ + rpad$("Nothing", 32, " ")
-    END IF
-    PRINT tmp$
-    
-    tmp$ = lpad$(" (A)rmor", 13, " " )
-    if (player.armor <> -1) THEN
-        tmp$ = tmp$ + rpad$(RTRIM$(inventory(player.armor).displayName), 32, " ")
-    ELSE
-        tmp$ = tmp$ + rpad$("Nothing", 32, " ")
-    END IF
-    PRINT tmp$
-    
-    j = 1
-    FOR i = 0 TO UBOUND(inventory)
-        IF (i <> player.lhand AND i <> player.rhand AND i <> player.armor) THEN
-            tmp$ = lpad(" (" + LTRIM$(STR$(j)) + ")", 13, " ")
-            IF (inventory(i).displayName <> STRING$(32," ") AND inventory(i).displayName <> STRING$(32, CHR$(0))) THEN
-                tmp$ = tmp$ + rpad$(RTRIM$(inventory(i).displayName), 32, " ")
-            ELSE
-                tmp$ = tmp$ + rpad$("Nothing", 32, " ")
-            END IF
-            PRINT tmp$
-            
-            choices(j) = i
-            
-            j = j + 1
-        END IF
-    NEXT i
 
+    PRINT " (U)nequip"
     PRINT
-    PRINT STRING$(80, "=")
+    PRINT " (B)ack"
     PRINT
 
     choice$ = prompt$
 
-    manageInventoryItem(choices(VAL(choice$)))
+    IF (UCASE$(choice$) = "U") THEN
+        SELECT CASE slot$
+            CASE "L"
+                player.lhand = -1
+            CASE "R"
+                player.rhand = -1
+            CASE "A"
+                player.armor = -1
+        END SELECT
+    END IF
 END SUB
 
 SUB manageInventoryItem(i%)
-    CLS
-    infoPanel
-
     SELECT CASE inventory(i%).itemType
         CASE 0
             manageInventoryWeapon(i%)
@@ -416,6 +445,9 @@ SUB manageInventoryItem(i%)
 END SUB
 
 SUB manageInventoryWeapon(i%)
+    CLS
+    infoPanel
+
     PRINT " Equip (L)eft Hand"
 
     IF inventory(i%).hands = 1 THEN
@@ -431,12 +463,18 @@ SUB manageInventoryWeapon(i%)
 
     SELECT CASE UCASE$(choice$)
         CASE "L"
-            IF (inventory(player.lhand).hands = 2 OR inventory(i%).hands = 2) THEN
-                player.rhand = -1
+            IF player.lhand <> -1 THEN
+                IF (inventory(player.lhand).hands = 2 OR inventory(i%).hands = 2) THEN
+                    player.rhand = -1
+                END IF
             END IF
 
             player.lhand = i%
         CASE "R"
+            IF (player.lhand <> -1 AND inventory(player.lhand).hands = 2) THEN
+                player.lhand = -1
+            END IF
+
             player.rhand = i%
         CASE "D"
             DIM tmp AS ItemType
@@ -445,7 +483,11 @@ SUB manageInventoryWeapon(i%)
 END SUB
 
 SUB manageInventoryArmor(i%)
+    CLS
+    infoPanel
 END SUB
 
 SUB manageInventoryOther(i%)
+    CLS
+    infoPanel
 END SUB
