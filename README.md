@@ -20,7 +20,7 @@ And qbasic
 
 Add qbasic to PATH
 
-    sed -e 's/\r//' -e 's/^path.*$/&;c:\olddos/1' -e 's/$/\r/' ~/.dosemu/drive_c/autoexec.bat
+    sed -i -e 's/\r//' -e 's/^path.*$/&;c:\olddos/1' -e 's/$/\r/' ~/.dosemu/drive_c/autoexec.bat
 
 # Getting Started
 
